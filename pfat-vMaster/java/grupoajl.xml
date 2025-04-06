@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Grupo nick="grupoajl">
+  <Alumno>
+    <NIU><![CDATA[100472823]]></NIU>
+    <Apellidos><![CDATA[ROJAS GARCIA-ROSTAN]]></Apellidos>
+    <Nombre><![CDATA[JAVIER]]></Nombre>
+    <GrupoReducido><![CDATA[71]]></GrupoReducido>
+  </Alumno>
+  <Alumno>
+    <NIU><![CDATA[100472775]]></NIU>
+    <Apellidos><![CDATA[RODRIGUEZ TREVI?O]]></Apellidos>
+    <Nombre><![CDATA[LUCIA]]></Nombre>
+    <GrupoReducido><![CDATA[71]]></GrupoReducido>
+  </Alumno>
+  <Alumno>
+    <NIU><![CDATA[100472864]]></NIU>
+    <Apellidos><![CDATA[GOMEZ ALONSO]]></Apellidos>
+    <Nombre><![CDATA[ALEJANDRO JORGE]]></Nombre>
+    <GrupoReducido><![CDATA[71]]></GrupoReducido>
+  </Alumno>
+</Grupo>

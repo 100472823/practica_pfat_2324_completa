@@ -1,0 +1,191 @@
+package Parser;
+
+import java_cup.runtime.*;
+import AST.*;
+
+parser code {:
+public void syntax_error(Symbol s) {
+  report_error("Error de sintaxis en linea " + s.left, null);
+}
+
+public void unrecovered_syntax_error(Symbol s) throws
+  java.lang.Exception {
+  report_fatal_error("", null);
+}
+:};
+
+
+// meter aqui bool, y int o no. 
+terminal COMA, PC, PAREN, TESIS, BEGIN, END, ASIG, AND, OR, NOT, 
+IF, THEN, PROG, DECL, WHILE, DO, PRINT_I, PRINT_B, BRAC, KET, 
+IN, UNION, INTERSEC, CARD, LOWEST_ELEM, MAS, MENOS, MUL, 
+DIV, MAYOR, MENOR, IGUAL,UMINUS, EMPTYSET;
+
+
+terminal Integer TYPE,CINT;
+terminal String IDENT;
+terminal Boolean CLOG;
+
+// duda, no se como definir intet, type?
+
+// TYpe, tiene un int asociado que sera 1 2 o 3 Siendo 1, int, 2 bool, y 3 intset.
+// no se si hace falta declararlos como terminales. 
+
+
+
+
+// la primera es el nombre de la clase java y la segunda es el nombre del no terminal
+non terminal s s;
+non terminal IdentList IdentList;
+non terminal StatementList StatementList;
+non terminal Body Body;
+non terminal Statement Statement;
+non terminal Exp Exp;
+non terminal LDecl LDecl;
+non terminal Decl Decl;
+non terminal ExpList ExpList;
+
+
+
+
+// en la practica se indica precedencia desde la izquierda
+
+precedence left UNION;
+precedence left INTERSEC;
+precedence left IN;
+precedence left OR;
+precedence left AND;
+precedence left NOT;
+precedence left IGUAL;
+// como hacemos con el y, con una coma sirve
+precedence left MAYOR, MENOR;
+precedence left MAS, MENOS;
+precedence left MUL, DIV;
+precedence left UMINUS;
+// 11 opuesto, Explicacion; 
+// Esta en la practica 0 copiar ahora. 
+
+
+start with s;
+// cuando un terminal tiene un dato asociado pero los no terminales siempre lo tienen. 
+
+// en este caso es el token, DECL, no el no terminal
+// result new, casi siempre, caso en el que la parte derecha haya un no terminal y pongas ese
+// dato asociado en el no terminal.
+
+s::= PROG IDENT:ident1 DECL LDecl:Ld1 Body:b1 {:RESULT= new sv1(ident1,Ld1,b1);:}
+| PROG IDENT:ident1 Body:b1 {:RESULT= new sv2(ident1,b1);:} ;
+
+LDecl::= Decl:d PC                      {:RESULT=new
+  LDecl1(d); :}
+|   Decl:d PC LDecl:l2              {:RESULT=new
+  LDecl2(d, l2); :} ;
+
+  // Tipo es T, para boolean, true?? por que se le asigna a decl y no a pc 
+  // como va con el ejemplo y lo de in out y local con LDecl
+
+  // duda en Decl, el type
+  Decl ::= TYPE:t1 IdentList:id1          {:RESULT=new Decl1(t1, id1); :} ;
+
+  IdentList ::= IDENT:i1         {:RESULT = new IdentList1(i1);:}
+  | IDENT:i1 COMA IdentList:id1   {:RESULT = new IdentList2(i1,id1);:} ;
+
+
+Body ::= BEGIN StatementList:sl1 END PC {:RESULT=new Body(sl1);:} ;
+
+StatementList ::= Statement:s1 PC {:RESULT = new StatementList1(s1);:}
+| Statement:s1 PC StatementList:sl1 {:RESULT =new  StatementList2(s1,sl1);:} ;
+
+
+
+ Statement ::= IDENT:i1 ASIG Exp:Exp1 {:RESULT = new Statement1(i1,Exp1);:}
+| PRINT_I PAREN IDENT:i1 TESIS {:RESULT= new Statement4(i1);:} 
+| PRINT_B PAREN IDENT:i1 TESIS {:RESULT= new Statement5(i1);:}
+| IF Exp:Exp1 THEN StatementList:sl1 END {:RESULT= new Statement2(Exp1,sl1);:}
+| WHILE Exp:Exp1 DO StatementList:sl1 END {:RESULT= new Statement3(Exp1,sl1);:} ;
+
+
+
+
+ExpList ::= Exp:e {:RESULT=new ExpList1(e); :}
+          | Exp:e COMA ExpList:el {:RESULT=new ExpList2(el, e); :} ;
+// definir Exp:
+
+
+// reglas de produccion Exp. 
+// No puedes tener un new, de una interfaz. 
+
+Exp ::= Exp:Exp1 MAS Exp:Exp2        {:RESULT = new Suma(Exp1,Exp2);:}
+| Exp:Exp1 MUL Exp:Exp2       {:RESULT = new Mult(Exp1,Exp2);:}
+| Exp:Exp1 MENOS Exp:Exp2    {:RESULT = new Resta(Exp1,Exp2);:}
+|Exp:Exp1 DIV Exp:Exp2     {:RESULT = new Divison(Exp1,Exp2);:}
+// clase nombre clase Exp??
+// dentro de exta case Exp, voy a tener un private Exp??
+
+
+
+/*Duda Implementacion, Al declarar Exp->IDENT i1, tenemos que hacer 
+Una clase de nombrex, que implemente esa interfaz, en la que tendremos 
+un objeto de tipo Exp, y java, al crear un objeto de la clase nombre 
+sabra que nos referimos a esta regla de produccion especifica*/
+
+// devolver siempre un objeto de la clase que implemente Exp. 
+| IDENT:i1                {:RESULT = new Nombre(i1);:}
+| PAREN Exp:Exp1 TESIS      {:RESULT = new exp_parentesis(Exp1);:}
+// constante Expresada en decimal falta cual es el terminal para el decimal. 
+// este Exp, que tiene que ser de tipo inset, se pone solo con Exp??
+| CARD PAREN Exp:Exp1 TESIS           {:RESULT = new card(Exp1);:}
+| LOWEST_ELEM PAREN Exp:Exp1 TESIS     {:RESULT = new lowest_element(Exp1);:}
+|    EMPTYSET                             {:RESULT = new Emptyset();:}
+|   BRAC   KET                            {:RESULT = new Emptyset();:}
+// es un conjunto de ints separado por comas. 
+| BRAC ExpList:ExpList1 KET               {:RESULT = new intset(ExpList1);:}
+// asumo que los dos conjuntos A y B, son de tipo intset, representados 
+// por tipos, Exp
+| Exp:Exp1 UNION Exp:Exp2              {:RESULT = new Union(Exp1,Exp2);:}
+| Exp:Exp1 INTERSEC Exp:Exp2      {:RESULT = new Intersec(Exp1,Exp2);:}
+// Asumiento que las Exp1 y Exp2, son inteset, y que UMENOS represneta la diferencia entren ellos
+//| Exp:Exp1 MENOS Exp:Exp2        {:RESULT = new Diferen(Exp1,Exp2);:} 
+// Constante bool true, que se devuelve??
+| CLOG:i1                           {:RESULT = new true_false(i1);:}
+// este i1, tenemos que guardarlo, como un boolean, 
+// que podra tener distintos valores, true o false, 
+
+//Declarar clase correspondiente con int.
+| CINT:i1                          {:RESULT = new entero(i1);:} 
+
+// asumiendo que Exp, es un objeto de la interfaz Exp, y que 
+// esta regla de produccion, se implementara en una clase. 
+//Asumiendo que Exp, puedser CLOG debido a las reglas de produccion de arriba
+| Exp:Exp1 AND Exp:Exp2                {:RESULT = new Conjuncion(Exp1,Exp2);:}
+| Exp:Exp1 OR Exp:Exp2                {:RESULT = new Diyuncion(Exp1,Exp2);:}
+| NOT Exp:Exp1              {:RESULT = new Negacion_log(Exp1);:}
+| Exp:Exp1 IGUAL Exp:Exp2                {:RESULT = new Compara_igual(Exp1,Exp2);:}
+| Exp:Exp1 MENOR Exp:Exp2                {:RESULT = new Compara_menor(Exp1,Exp2);:}
+| Exp:Exp1 MAYOR Exp:Exp2                {:RESULT = new Compara_mayor(Exp1,Exp2);:}
+// Asumiendo que los Exp, puedan coger tipos de int y intset
+| Exp:Exp1 IN Exp:Exp2                {:RESULT = new Pertenece(Exp1,Exp2);:}
+// uminus es correcto
+|MENOS Exp:Exp1                        {:RESULT = new opuesto_def(Exp1);:} %prec UMINUS;
+
+
+
+// Clase suma, y los guardo. no se hace suma ni nada
+//Exp flecha ident; para que un identificador sea el nombre de una variable Exp
+
+
+// opuesto practica 0
+
+// ylex .java, 
+// parser.java sym.java
+// primerocompilamos parser.
+// para compliar ylex.java, primero, tienes que tener los archivos de cup. 
+
+// todo Expresiones
+
+
+
+
+
+
+
