@@ -43,6 +43,7 @@ practica3_pfat/
 ├── java-cup-11b.jar       # Java CUP parser generator
 ├── test.sh, test2.sh      # Helper scripts to compile and test
 └── errores.log            # Log file for errors
+
 🚀 How to Build and Run
 Make sure you have Java and Bash installed.
 
